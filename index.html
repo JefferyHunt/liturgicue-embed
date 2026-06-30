@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LiturgiCue · YouTube</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+  iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; }
+</style>
+</head>
+<body>
+<!--
+  YouTube embed proxy for the LiturgiCue mobile apps (iOS/Android).
+
+  iOS WKWebView (and any app webview) loads its UI from a custom scheme / app
+  origin that YouTube refuses to embed into ("Video player configuration error",
+  code 153). This page is served from a real https origin (GitHub Pages), so a
+  YouTube <iframe> nested inside it is embedded FROM github.io — an origin YouTube
+  accepts — and plays. The app loads this page in an iframe instead of embedding
+  youtube.com directly.
+
+  Params:  v=<11-char id>   bg=1 (background: no controls, looped)   mute=0 (sound)
+-->
+<script>
+(function () {
+  var p = new URLSearchParams(location.search);
+  var v = (p.get('v') || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 11); // ids are 11 url-safe chars
+  if (v.length !== 11) return;
+  var bg = p.get('bg') === '1';
+  var mute = p.get('mute') !== '0'; // muted by default (autoplay needs it on mobile)
+  var q = [
+    'autoplay=1', 'mute=' + (mute ? 1 : 0), 'playsinline=1',
+    'modestbranding=1', 'rel=0', 'controls=' + (bg ? 0 : 1),
+    'origin=' + encodeURIComponent(location.origin)
+  ];
+  if (bg) q.push('loop=1', 'playlist=' + v); // single-video loop needs playlist=id
+  var f = document.createElement('iframe');
+  f.src = 'https://www.youtube.com/embed/' + v + '?' + q.join('&');
+  f.allow = 'autoplay; encrypted-media; picture-in-picture';
+  f.setAttribute('allowfullscreen', '');
+  document.body.appendChild(f);
+})();
+</script>
+</body>
+</html>
